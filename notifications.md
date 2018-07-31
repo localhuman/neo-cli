@@ -26,5 +26,5 @@ It is not recommended to use the RPC server at the same time as the notification
 
 Bootstrap Chain and Notification Database are available here:
 
-- [Chain](link to chain)
-- [Notifications](link to notifications)
+- [Chain2567xxx.tar.gz](https://s3.us-east-2.amazonaws.com/cityofzion/neo-cli-notifications/Chain2567xxx.tar.gz)
+- [Notif2567xxx.tar.gz](https://s3.us-east-2.amazonaws.com/cityofzion/neo-cli-notifications/Notif2567xxx.tar.gz)
