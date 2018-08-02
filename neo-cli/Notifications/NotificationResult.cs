@@ -33,7 +33,10 @@ namespace Neo.Notifications
         public int Page { get; set; } = 1;
         private int _pageSize = 500;
 
-        public string EventType { get; set; } = null;
+        public List<string> EventType { get; set; } = null;
+
+//        public List<string> EventTypes { get; set; } = null;
+
         public int AfterBlock { get; set; } = -1;
         public int BeforeBlock { get; set; } = -1;
 

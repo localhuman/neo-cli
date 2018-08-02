@@ -155,7 +155,7 @@ namespace Neo.Notifications
             if( query.EventType != null)
             {
                 JToken notifyType = token.SelectToken("notify_type");
-                if (notifyType != null && notifyType.ToString() != query.EventType)
+                if(notifyType != null && !query.EventType.Contains(notifyType.ToString()))
                 {
                     return false;
                 }

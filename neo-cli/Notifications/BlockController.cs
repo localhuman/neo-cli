@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using Neo.Core;
 
 namespace Neo.Notifications
 {
@@ -20,6 +21,12 @@ namespace Neo.Notifications
         public IActionResult GetByHeight(int height, NotificationQuery pageQuery)
         {
             uint blockHeight = Convert.ToUInt32(height);
+
+            if (blockHeight > Blockchain.Default.Height)
+            {
+                return NotFound();
+            }
+
             NotificationResult result = NotificationDB.Instance.NotificationsForBlock(blockHeight, pageQuery);
 
             result.Paginate(pageQuery);
