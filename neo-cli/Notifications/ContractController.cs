@@ -12,7 +12,7 @@ namespace Neo.Notifications
     public class ContractsController : ControllerBase
     #endregion
     {
-        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Default.Height, message = "Invalid Script Hash", results = new List<JToken>()};
+        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Invalid Script Hash", results = new List<JToken>()};
 
 
         #region snippet_GetByScriptHash

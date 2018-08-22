@@ -65,7 +65,7 @@ namespace Neo.Notifications
 
         public NotificationResult NotificationsForBlock(uint height, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height, message = "Results for a block", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for a block", results = new List<JToken>() };
             foreach(IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_BLOCK).Add(height))) {
                 if (filter_result(res.json, query))
                 {
@@ -78,7 +78,7 @@ namespace Neo.Notifications
 
         public NotificationResult NotificationsForContract(UInt160 contract, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height, message = "Results for contract", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for contract", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_CONTRACT).Add(contract)))
             {
@@ -93,7 +93,7 @@ namespace Neo.Notifications
 
         public NotificationResult NotificationsForAddress(UInt160 address, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height, message = "Results for contract", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for contract", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_ADDR).Add(address)))
             {
@@ -108,7 +108,7 @@ namespace Neo.Notifications
 
         public NotificationResult NotificationsForTransaction(UInt256 tx, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height, message = "Results for TX", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for TX", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_TX).Add(tx)))
             {
@@ -124,7 +124,7 @@ namespace Neo.Notifications
 
         public NotificationResult GetTokens(NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height, message = "Results for tokens", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for tokens", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_TOKEN)))
             {

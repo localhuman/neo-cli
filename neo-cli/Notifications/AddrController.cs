@@ -15,7 +15,7 @@ namespace Neo.Notifications
     #endregion
     {
 
-        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Default.Height, message = "Invalid Address", results = new List<JToken>() };
+        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Invalid Address", results = new List<JToken>() };
 
 
         #region snippet_GetByAddr
