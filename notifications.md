@@ -20,7 +20,7 @@ It is not recommended to use the RPC server at the same time as the notification
 
 ## Prebuilt:
 
-[You can download the linux 64 bit build here](https://s3.us-east-2.amazonaws.com/cityofzion/neo-cli-notifications/NeoCliNotifications_2.7.6.1.zip)
+[You can download the linux 64 bit build here](https://s3.us-east-2.amazonaws.com/cityofzion/neo-cli-notifications/NeoCliNotifications_2.7.6.1.b.zip)
 
 ## Bootstraps:
 
