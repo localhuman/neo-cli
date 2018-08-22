@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -16,6 +17,8 @@ using Swashbuckle.AspNetCore.Swagger;
 
 namespace Neo.Notifications
 {
+
+
     public class OutputFormatActionFilter : IActionFilter
     {
         public void OnActionExecuting(ActionExecutingContext context)
@@ -44,6 +47,7 @@ namespace Neo.Notifications
         public NotificationStartup(IConfiguration configuration)
         {
             Configuration = configuration;
+            
         }
 
         public IConfiguration Configuration { get; }
@@ -60,6 +64,8 @@ namespace Neo.Notifications
             {
                 c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "NEO Notification API", Version = "v1" });
             });
+
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,6 +84,13 @@ namespace Neo.Notifications
             });
 
             app.UseMvcWithDefaultRoute();
+
+            app.UseCors(options =>
+            {
+                options.AllowAnyOrigin();
+                options.AllowAnyHeader();
+                options.AllowAnyMethod();
+            });
         }
     }
 
