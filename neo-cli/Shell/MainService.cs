@@ -943,6 +943,7 @@ namespace Neo.Shell
             if (processNotifications)
             {
                 notificationDB = NotificationDB.Instance;
+                notificationDB.version = LocalNode.UserAgent;
             }
             if (serveNotifications)
             {

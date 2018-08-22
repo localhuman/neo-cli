@@ -54,6 +54,7 @@ namespace Neo.Notifications
 
     }
 
+
     public class NotificationResult
     {
         public uint current_height { get; set; }

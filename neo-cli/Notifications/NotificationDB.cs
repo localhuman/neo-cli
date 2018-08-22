@@ -42,6 +42,8 @@ namespace Neo.Notifications
 
         private static NotificationDB _instance;
 
+        public String version;
+
         public static NotificationDB Instance
         {
             get
