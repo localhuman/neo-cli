@@ -3,6 +3,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.6.1] - 2018-07-09
+### Fixed
+- Fix a bug that crashes when the non-consensus node runs the "Start consensus" command.
+- Fix a bug that do not load plugins when the node is started.
+
+## [2.7.6] - 2018-06-19
+### Added
+- New CLI command: `import multisigaddress`.
+- New CLI commands: `sign` and `relay`.
+- New RPC command: `getvalidators`.
+- New smart contract APIs: `Neo.Enumerator.*`.
+- New smart contract API: `System.Blockchain.GetTransactionHeight`.
+- New smart contract API: `System.Storage.GetReadOnlyContext` and `Neo.StorageContext.AsReadOnly`.
+
+### Changed
+- Support for NeoContract Standary Namespace.
+- Improved Plugins System: filter transactions in plugin.
+- Improve the speed of creating addresses.
+
 ## [2.7.5] - 2018-05-18
 ### Added
 - Importing/exporting blocks with sharding.
