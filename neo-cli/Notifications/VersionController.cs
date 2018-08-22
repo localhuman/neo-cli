@@ -10,6 +10,7 @@ namespace Neo.Notifications
     public class VersionResult
     {
         public string version { get; set; }
+        public uint current_height { get; set; }
     }
 
 
@@ -19,7 +20,7 @@ namespace Neo.Notifications
     #endregion
     {
 
-        private VersionResult defaultResult = new VersionResult { version = NotificationDB.Instance.version };
+        private VersionResult defaultResult = new VersionResult { version = NotificationDB.Instance.version, current_height = Blockchain.Default.Height + 1 };
 
 
         #region snippet_GetVersion
