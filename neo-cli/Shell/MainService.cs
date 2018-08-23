@@ -8,6 +8,7 @@ using Neo.IO.Json;
 using Neo.Network;
 using Neo.Network.Payloads;
 using Neo.Network.RPC;
+using Neo.Plugins;
 using Neo.Services;
 using Neo.SmartContract;
 using Neo.VM;
@@ -899,7 +900,7 @@ namespace Neo.Shell
 
         protected internal override void OnStart(string[] args)
         {
-            bool useRPC = false, nopeers = false, useLog = false;
+            bool useRPC = false, nopeers = false, useLog = false, serveNotifications = false;
             for (int i = 0; i < args.Length; i++)
                 switch (args[i])
                 {
@@ -914,6 +915,10 @@ namespace Neo.Shell
                     case "-l":
                     case "--log":
                         useLog = true;
+                        break;
+                    case "-s":
+                    case "--serve-notifications":
+                        serveNotifications = true;
                         break;
                 }
             Blockchain.RegisterBlockchain(new LevelDBBlockchain(Path.GetFullPath(Settings.Default.Paths.Chain)));
@@ -987,10 +992,22 @@ namespace Neo.Shell
                         OnStartConsensusCommand(null);
                     }
                 }
+
                 if (useRPC)
                 {
                     rpc = new RpcServerWithWallet(LocalNode);
                     rpc.Start(Settings.Default.RPC.Port, Settings.Default.RPC.SslCert, Settings.Default.RPC.SslCertPassword);
+                }
+
+                foreach (NotificationPlugin plugin in NotificationPlugin.Instances)
+                {
+                    plugin.UserAgent = LocalNode.UserAgent;
+                    plugin.StartPersistingNotifications();
+
+                    if (serveNotifications)
+                    {
+                        plugin.StartRESTApi();
+                    }
                 }
             });
         }
