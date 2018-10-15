@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using Neo.Core;
+using Neo.Ledger;
 
 namespace Neo.Notifications
 {
@@ -22,7 +22,7 @@ namespace Neo.Notifications
         {
             uint blockHeight = Convert.ToUInt32(height);
 
-            if (blockHeight > Blockchain.Default.Height)
+            if (blockHeight > Blockchain.Singleton.Height)
             {
                 return NotFound();
             }

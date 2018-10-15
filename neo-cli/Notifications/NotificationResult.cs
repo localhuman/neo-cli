@@ -35,8 +35,6 @@ namespace Neo.Notifications
 
         public List<string> EventType { get; set; } = null;
 
-//        public List<string> EventTypes { get; set; } = null;
-
         public int AfterBlock { get; set; } = -1;
         public int BeforeBlock { get; set; } = -1;
 

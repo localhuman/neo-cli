@@ -1,18 +1,19 @@
-﻿using Neo.Core;
+﻿using Neo.Ledger;
+using Neo.Network.P2P.Payloads;
 using Neo.IO.Data.LevelDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Neo.Implementations.Blockchains.LevelDB;
 using Neo.VM;
 using Newtonsoft.Json.Linq;
 using Neo.SmartContract;
 using System.Numerics;
-using Neo.Wallets;
+using WalletHelper = Neo.Wallets.Helper;
 using JObject = Neo.IO.Json.JObject;
 using Iterator = Neo.IO.Data.LevelDB.Iterator;
 using VMArray = Neo.VM.Types.Array;
+using Akka.Actor;
 
 namespace Neo.Notifications
 {
@@ -31,7 +32,7 @@ namespace Neo.Notifications
         public const byte NP_TX = 0x07;
     }
 
-    public class NotificationDB
+    public class NotificationDB : UntypedActor
     {
 
         private DB db;
@@ -48,26 +49,25 @@ namespace Neo.Notifications
         {
             get
             {
-                if( _instance == null)
-                {
-                    _instance = new NotificationDB();
-                }
-
                 return _instance;
             }
         }
 
-        private NotificationDB()
+        public NotificationDB(IActorRef blockchain)
         {
-            LevelDBBlockchain.ApplicationExecuted += LevelDBBlockchain_ApplicationExecuted;
-            LevelDBBlockchain.PersistCompleted += LevelDBBlockchain_BlockPersisted;
-            String path = Settings.Default.Paths.Notifications;
-            db = DB.Open(path, new Options { CreateIfMissing = true });
+            if(_instance == null)
+            {
+                _instance = this;
+                String path = Settings.Default.Paths.Notifications;
+                db = DB.Open(path, new Options { CreateIfMissing = true });
+
+                blockchain.Tell(new Blockchain.Register());       
+            }
         }
 
         public NotificationResult NotificationsForBlock(uint height, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for a block", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Results for a block", results = new List<JToken>() };
             foreach(IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_BLOCK).Add(height))) {
                 if (filter_result(res.json, query))
                 {
@@ -80,7 +80,7 @@ namespace Neo.Notifications
 
         public NotificationResult NotificationsForContract(UInt160 contract, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for contract", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Results for contract", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_CONTRACT).Add(contract)))
             {
@@ -95,7 +95,7 @@ namespace Neo.Notifications
 
         public NotificationResult NotificationsForAddress(UInt160 address, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for contract", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Results for contract", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_ADDR).Add(address)))
             {
@@ -110,7 +110,7 @@ namespace Neo.Notifications
 
         public NotificationResult NotificationsForTransaction(UInt256 tx, NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for TX", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Results for TX", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_TX).Add(tx)))
             {
@@ -126,7 +126,7 @@ namespace Neo.Notifications
 
         public NotificationResult GetTokens(NotificationQuery query)
         {
-            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Results for tokens", results = new List<JToken>() };
+            NotificationResult nResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Results for tokens", results = new List<JToken>() };
 
             foreach (IterResult res in IterFind(SliceBuilder.Begin(NotificationsPrefix.NP_TOKEN)))
             {
@@ -141,8 +141,9 @@ namespace Neo.Notifications
 
         public void Dispose()
         {
-            LevelDBBlockchain.ApplicationExecuted -= LevelDBBlockchain_ApplicationExecuted;
-            LevelDBBlockchain.PersistCompleted -= LevelDBBlockchain_BlockPersisted;
+
+            //            LevelDBBlockchain.ApplicationExecuted -= LevelDBBlockchain_ApplicationExecuted;
+            //            LevelDBBlockchain.PersistCompleted -= LevelDBBlockchain_BlockPersisted;
             db.Dispose();
         }
 
@@ -202,74 +203,80 @@ namespace Neo.Notifications
             return results;
         }
 
-        private void LevelDBBlockchain_BlockPersisted(object sender, Block block)
+        protected override void OnReceive(object message)
         {
-            blockEventIndex = 0;
-        }
-
-        private void LevelDBBlockchain_ApplicationExecuted(object sender, ApplicationExecutedEventArgs e)
-        {
-            // blockchain height isn't updated until after this event is dispatched
-            uint blockHeight = Blockchain.Default.Height+1;
-            string txid = e.Transaction.Hash.ToString();
-            byte[] tx_hash = e.Transaction.Hash.ToArray();
-            bool checkedContract = false;
-
-            foreach(ApplicationExecutionResult res in e.ExecutionResults)
+            if( message is Blockchain.PersistCompleted)
             {
-                if(res.VMState.HasFlag(VMState.FAULT))
-                {
-                    continue;
-                }
+                blockEventIndex = 0;
+            }
+            else if( message is Blockchain.ApplicationExecuted e)
+            {
 
-                foreach (var p in res.Notifications)
-                {
+                // blockchain height isn't updated until after this event is dispatched
+                uint blockHeight = Blockchain.Singleton.Height + 1;
+                string txid = e.Transaction.Hash.ToString();
+                byte[] tx_hash = e.Transaction.Hash.ToArray();
+                bool checkedContract = false;
 
-                    if (!checkedContract)
+                foreach (ApplicationExecutionResult res in e.ExecutionResults)
+                {
+                    if (res.VMState.HasFlag(VMState.FAULT))
                     {
-                        checkedContract = true;
-                        bool contractIsSaved = checkContractExists(p.ScriptHash);
-                        if (!contractIsSaved)
-                        {
-                            checkIsNEP5(p.ScriptHash, txid);
-                        }
+                        continue;
                     }
 
-                    try
+                    foreach (var p in res.Notifications)
                     {
-                        JObject notificationJson = NotificationToJson(p, blockHeight, txid);
 
-                        VMArray states = p.State as VMArray;
-                        if (states != null && states.Count > 0)
+                        if (!checkedContract)
                         {
-                            string notifType = states[0].GetString();
-
-                            switch (notifType)
+                            checkedContract = true;
+                            bool contractIsSaved = checkContractExists(p.ScriptHash);
+                            if (!contractIsSaved)
                             {
-                                case "transfer":
-                                    persistTransfer(p, notificationJson, states, blockHeight, tx_hash);
-                                    break;
-
-                                case "refund":
-                                    persistRefund(p, notificationJson, states, blockHeight,tx_hash);
-                                    break;
-
-                                default:
-                                    persistNotification(notifType, p, notificationJson, blockHeight, tx_hash);
-                                    break;
+                                checkIsNEP5(p.ScriptHash, txid);
                             }
                         }
-                    }
-                    catch (Exception error)
-                    {
-                        Console.WriteLine($"Could not get notification state: {error.ToString()}");
+
+                        try
+                        {
+                            JObject notificationJson = NotificationToJson(p, blockHeight, txid);
+
+                            VMArray states = p.State as VMArray;
+                            if (states != null && states.Count > 0)
+                            {
+                                string notifType = states[0].GetString();
+
+                                switch (notifType)
+                                {
+                                    case "transfer":
+                                        persistTransfer(p, notificationJson, states, blockHeight, tx_hash);
+                                        break;
+
+                                    case "refund":
+                                        persistRefund(p, notificationJson, states, blockHeight, tx_hash);
+                                        break;
+
+                                    default:
+                                        persistNotification(notifType, p, notificationJson, blockHeight, tx_hash);
+                                        break;
+                                }
+                            }
+                        }
+                        catch (Exception error)
+                        {
+                            Console.WriteLine($"Could not get notification state: {error.ToString()}");
+                        }
+
+                        blockEventIndex++;
                     }
 
-                    blockEventIndex++;
                 }
 
             }
         }
+
+        
 
         private JObject NotificationToJson(NotifyEventArgs n, uint height, string txid)
         {
@@ -404,11 +411,11 @@ namespace Neo.Notifications
 
                     if( hasFromAddress)
                     {
-                        from_addr = Wallet.ToAddress( new UInt160(from_ba));
+                        from_addr = WalletHelper.ToAddress( new UInt160(from_ba));
 
                     }
 
-                    to_addr = Wallet.ToAddress(new UInt160(to_ba));
+                    to_addr = WalletHelper.ToAddress(new UInt160(to_ba));
                     BigInteger amt = states[3].GetBigInteger();
 
                     nJson["addr_from"] = from_addr;
@@ -446,7 +453,7 @@ namespace Neo.Notifications
                 {
                     string to_addr = "";
                     byte[] to_ba = states[1].GetByteArray();
-                    to_addr = Wallet.ToAddress(new UInt160(to_ba));
+                    to_addr = WalletHelper.ToAddress(new UInt160(to_ba));
                     BigInteger amt = states[2].GetBigInteger();
 
                     nJson["addr_to"] = to_addr;

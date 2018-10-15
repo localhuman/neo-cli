@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using Neo.Core;
+using Neo.Ledger;
 
 namespace Neo.Notifications
 {
@@ -12,7 +12,7 @@ namespace Neo.Notifications
     public class ContractsController : ControllerBase
     #endregion
     {
-        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Invalid Script Hash", results = new List<JToken>()};
+        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Invalid Script Hash", results = new List<JToken>()};
 
 
         #region snippet_GetByScriptHash

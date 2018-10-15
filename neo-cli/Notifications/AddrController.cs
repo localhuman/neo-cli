@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using Neo.Core;
 using Newtonsoft.Json.Linq;
-using Neo.Wallets;
+using Neo.Ledger;
+using WalletHelper = Neo.Wallets.Helper;
 
 namespace Neo.Notifications
 {
@@ -15,7 +15,7 @@ namespace Neo.Notifications
     #endregion
     {
 
-        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Invalid Address", results = new List<JToken>() };
+        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Invalid Address", results = new List<JToken>() };
 
 
         #region snippet_GetByAddr
@@ -28,7 +28,7 @@ namespace Neo.Notifications
 
             if( addr.Length == 34)
             {
-                result = NotificationDB.Instance.NotificationsForAddress(Wallet.ToScriptHash(addr), pageQuery);
+                result = NotificationDB.Instance.NotificationsForAddress(WalletHelper.ToScriptHash(addr), pageQuery);
 
             } else if( UInt160.TryParse(addr, out UInt160 address))
             {

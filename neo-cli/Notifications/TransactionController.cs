@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using Neo.Core;
+using Neo.Ledger;
 using Newtonsoft.Json.Linq;
 using Neo.Wallets;
 
@@ -15,7 +15,7 @@ namespace Neo.Notifications
     #endregion
     {
 
-        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Default.Height + 1, message = "Invalid TX Hash", results = new List<JToken>() };
+        private NotificationResult defaultResult = new NotificationResult { current_height = Blockchain.Singleton.Height + 1, message = "Invalid TX Hash", results = new List<JToken>() };
 
 
         #region snippet_GetByHash

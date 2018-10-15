@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using Neo.Core;
-using Newtonsoft.Json.Linq;
-using Neo.Wallets;
+using Neo.Ledger;
 
 namespace Neo.Notifications
 {
@@ -20,7 +17,7 @@ namespace Neo.Notifications
     #endregion
     {
 
-        private VersionResult defaultResult = new VersionResult { version = NotificationDB.Instance.version, current_height = Blockchain.Default.Height + 1 };
+        private VersionResult defaultResult = new VersionResult { version = NotificationDB.Instance.version, current_height = Blockchain.Singleton.Height + 1 };
 
 
         #region snippet_GetVersion

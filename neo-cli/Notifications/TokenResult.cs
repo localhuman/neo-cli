@@ -1,9 +1,10 @@
-﻿using Neo.Core;
+﻿using Neo.Ledger;
 using Neo.SmartContract;
 using Neo.VM;
 using Neo.Wallets;
 using System;
 using Neo.IO.Json;
+using WalletHelper = Neo.Wallets.Helper;
 
 namespace Neo.Notifications
 {
@@ -56,15 +57,16 @@ namespace Neo.Notifications
 
             
             NEP5Token result = new NEP5Token { ScriptHash = scriptHash.ToString() };
-            result.Symbol = engine.EvaluationStack.Pop().GetString();
-            result.Name = engine.EvaluationStack.Pop().GetString();
-            result.Decimals = (int)engine.EvaluationStack.Pop().GetBigInteger();
+            result.Symbol = engine.ResultStack.Pop().GetString();
+            result.Name = engine.ResultStack.Pop().GetString();
+            result.Decimals = (int)engine.ResultStack.Pop().GetBigInteger();
             
             if( result.Symbol.Length > 0 && result.Name.Length > 0)
             {
-                result.Address = Wallet.ToAddress(scriptHash);
-                result.Contract = Blockchain.Default.GetContract(scriptHash);
-                result.BlockHeight = (int)Blockchain.Default.Height + 1;
+                result.Address = WalletHelper.ToAddress(scriptHash);
+
+                result.Contract = Blockchain.Singleton.GetSnapshot().Contracts.TryGet(scriptHash);
+                result.BlockHeight = (int)Blockchain.Singleton.Height + 1;
                 result.tx = txid;
                 return result;
             }

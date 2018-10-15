@@ -2,7 +2,7 @@
   "ApplicationConfiguration": {
     "Paths": {
       "Chain": "Chain",
-      "ApplicationLogs": "ApplicationLogs_{0}",
+      "Index": "Index",
       "Notifications":  "Notifications"        
     },
     "P2P": {
