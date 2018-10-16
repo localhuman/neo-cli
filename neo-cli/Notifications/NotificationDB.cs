@@ -248,21 +248,27 @@ namespace Neo.Notifications
                             VMArray states = p.State as VMArray;
                             if (states != null && states.Count > 0)
                             {
-                                string notifType = states[0].GetString();
-
-                                switch (notifType)
+                                if( states[0] is VMArray)
                                 {
-                                    case "transfer":
-                                        persistTransfer(p, notificationJson, states, blockHeight, tx_hash);
-                                        break;
+                                    persistNotification("unkown", p, notificationJson, blockHeight, tx_hash);
+                                }
+                                else
+                                {
+                                    string notifType = states[0].GetString();
+                                    switch (notifType)
+                                    {
+                                        case "transfer":
+                                            persistTransfer(p, notificationJson, states, blockHeight, tx_hash);
+                                            break;
 
-                                    case "refund":
-                                        persistRefund(p, notificationJson, states, blockHeight, tx_hash);
-                                        break;
+                                        case "refund":
+                                            persistRefund(p, notificationJson, states, blockHeight, tx_hash);
+                                            break;
 
-                                    default:
-                                        persistNotification(notifType, p, notificationJson, blockHeight, tx_hash);
-                                        break;
+                                        default:
+                                            persistNotification(notifType, p, notificationJson, blockHeight, tx_hash);
+                                            break;
+                                    }
                                 }
                             }
                         }
