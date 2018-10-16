@@ -43,7 +43,12 @@ namespace Neo.Notifications
 
         private static NotificationDB _instance;
 
-        public String version;
+        public static String version;
+
+        public static Props Props(IActorRef blockchain)
+        {
+            return Akka.Actor.Props.Create(() => new NotificationDB(blockchain));
+        }
 
         public static NotificationDB Instance
         {
@@ -60,10 +65,10 @@ namespace Neo.Notifications
                 _instance = this;
                 String path = Settings.Default.Paths.Notifications;
                 db = DB.Open(path, new Options { CreateIfMissing = true });
-
-                blockchain.Tell(new Blockchain.Register());       
+                blockchain.Tell(new Blockchain.Register());
             }
         }
+        
 
         public NotificationResult NotificationsForBlock(uint height, NotificationQuery query)
         {
@@ -142,8 +147,6 @@ namespace Neo.Notifications
         public void Dispose()
         {
 
-            //            LevelDBBlockchain.ApplicationExecuted -= LevelDBBlockchain_ApplicationExecuted;
-            //            LevelDBBlockchain.PersistCompleted -= LevelDBBlockchain_BlockPersisted;
             db.Dispose();
         }
 

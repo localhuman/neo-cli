@@ -17,7 +17,7 @@ namespace Neo.Notifications
     #endregion
     {
 
-        private VersionResult defaultResult = new VersionResult { version = NotificationDB.Instance.version, current_height = Blockchain.Singleton.Height + 1 };
+        private VersionResult defaultResult = new VersionResult { version = NotificationDB.version, current_height = Blockchain.Singleton.Height + 1 };
 
 
         #region snippet_GetVersion

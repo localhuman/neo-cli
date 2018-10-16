@@ -884,8 +884,11 @@ namespace Neo.Shell
 
             if(processNotifications)
             {
-                notificationDB = new NotificationDB(system.Blockchain);
-                notificationDB.version = LocalNode.UserAgent;
+                NotificationDB.version = LocalNode.UserAgent;
+                system.ActorSystem.ActorOf(NotificationDB.Props(system.Blockchain), "notificationdb");
+// NotificationDB.Instance.InitializeWithSystem(system);
+                //                notificationDB = 
+                //                notificationDB.version = LocalNode.UserAgent;
             }
 
             if(serveNotifications)
