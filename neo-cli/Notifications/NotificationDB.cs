@@ -446,7 +446,9 @@ namespace Neo.Notifications
                 }
                 catch (Exception error)
                 {
-                    Console.WriteLine($"Could not write transfer: Hegiht: {height} States: {states}, {error.ToString()}");
+                    //                    Console.WriteLine($"Could not write transfer: Hegiht: {height} States: {states}, {error.ToString()}");
+                    // if we cant persist as standard transfer, we'll persist as untyped notification
+                    persistNotification("transfer", n, nJson, height, tx_hash);
                 }
 
             }
@@ -483,7 +485,10 @@ namespace Neo.Notifications
                 }
                 catch (Exception error)
                 {
-                    Console.WriteLine($"Could not write transfer: {error.ToString()}");
+                    //                    Console.WriteLine($"Could not write transfer: {error.ToString()}");
+                    // if we cant persist as standard refund, we'll persist as untyped notification
+                    persistNotification("refund", n, nJson, height, tx_hash);
+
                 }
 
             }
@@ -492,13 +497,19 @@ namespace Neo.Notifications
         private void persistNotification(string notifType, NotifyEventArgs n, JObject nJson, uint height, byte[] tx_hash)
         {
             UInt160 contractHash = n.ScriptHash;
-            nJson["notify_type"] = notifType;
-            nJson["state"] = n.State.ToParameter().ToJson();
-            byte[] output = JObjectToBytes(nJson);
+            try
+            {
+                nJson["notify_type"] = notifType;
+                nJson["state"] = n.State.ToParameter().ToJson();
+                byte[] output = JObjectToBytes(nJson);
 
-            persistToBlock(height, output);
-            persistToContract(n.ScriptHash.ToArray(), output);
-            persistToTransaction(tx_hash, output);
+                persistToBlock(height, output);
+                persistToContract(n.ScriptHash.ToArray(), output);
+                persistToTransaction(tx_hash, output);
+            } catch(Exception e)
+            {
+                Console.WriteLine($"Could not persist {notifType} notification: {e.Message}");
+            }
         }
     }
 }
