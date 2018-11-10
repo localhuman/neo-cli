@@ -43,6 +43,8 @@ namespace Neo.Notifications
 
         private static NotificationDB _instance;
 
+        public static Block CurrentBlock;
+
         public static String version;
 
         public static Props Props(IActorRef blockchain)
@@ -208,15 +210,17 @@ namespace Neo.Notifications
 
         protected override void OnReceive(object message)
         {
-            if( message is Blockchain.PersistCompleted)
+            if( message is Blockchain.PersistCompleted m)
             {
                 blockEventIndex = 0;
+                NotificationDB.CurrentBlock = m.Block;
+                Console.WriteLine($"Current Height {NotificationDB.CurrentBlock.Index + 1}");
             }
             else if( message is Blockchain.ApplicationExecuted e)
             {
 
                 // blockchain height isn't updated until after this event is dispatched
-                uint blockHeight = Blockchain.Singleton.Height + 1;
+                uint blockHeight = NotificationDB.CurrentBlock.Index + 1;
                 string txid = e.Transaction.Hash.ToString();
                 byte[] tx_hash = e.Transaction.Hash.ToArray();
                 bool checkedContract = false;
