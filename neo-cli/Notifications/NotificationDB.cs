@@ -68,6 +68,8 @@ namespace Neo.Notifications
                 String path = Settings.Default.Paths.Notifications;
                 db = DB.Open(path, new Options { CreateIfMissing = true });
                 blockchain.Tell(new Blockchain.Register());
+                NotificationDB.CurrentBlock = Blockchain.Singleton.GetBlock(Blockchain.Singleton.GetBlockHash(Blockchain.Singleton.Height));
+                Console.WriteLine($"Notification db current block {NotificationDB.CurrentBlock}");
             }
         }
         
