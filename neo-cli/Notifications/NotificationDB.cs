@@ -214,7 +214,7 @@ namespace Neo.Notifications
             {
                 blockEventIndex = 0;
                 NotificationDB.CurrentBlock = m.Block;
-                Console.WriteLine($"Current Height {NotificationDB.CurrentBlock.Index + 1}");
+//                Console.WriteLine($"Current Height {NotificationDB.CurrentBlock.Index + 1}");
             }
             else if( message is Blockchain.ApplicationExecuted e)
             {
