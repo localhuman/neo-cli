@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using Neo.Consensus;
 using Neo.IO;
 using Neo.Ledger;
 using Neo.Network.P2P;
@@ -34,7 +35,6 @@ namespace Neo.Shell
         private NeoSystem system;
         private WalletIndexer indexer;
 
-        private NotificationDB notificationDB;
         private NotificationApiApplication notificationApi;
         protected LocalNode LocalNode { get; private set; }
 
@@ -66,12 +66,16 @@ namespace Neo.Shell
                     return OnRelayCommand(args);
                 case "sign":
                     return OnSignCommand(args);
+                case "change":
+                    return OnChangeCommand(args);
                 case "create":
                     return OnCreateCommand(args);
                 case "export":
                     return OnExportCommand(args);
                 case "help":
                     return OnHelpCommand(args);
+                case "plugins":
+                    return OnPluginsCommand(args);
                 case "import":
                     return OnImportCommand(args);
                 case "list":
@@ -204,6 +208,25 @@ namespace Neo.Shell
             return true;
         }
 
+        private bool OnChangeCommand(string[] args)
+        {
+            switch (args[1].ToLower())
+            {
+                case "view":
+                    return OnChangeViewCommand(args);
+                default:
+                    return base.OnCommand(args);
+            }
+        }
+
+        private bool OnChangeViewCommand(string[] args)
+        {
+            if (args.Length != 3) return false;
+            if (!byte.TryParse(args[2], out byte viewnumber)) return false;
+            system.Consensus?.Tell(new ConsensusService.SetViewNumber { ViewNumber = viewnumber });
+            return true;
+        }
+
         private bool OnCreateCommand(string[] args)
         {
             switch (args[1].ToLower())
@@ -285,6 +308,7 @@ namespace Neo.Shell
                         WalletAccount account = Program.Wallet.CreateAccount();
                         Console.WriteLine($"address: {account.Address}");
                         Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        system.RpcServer?.OpenWallet(Program.Wallet);
                     }
                     break;
                 case ".json":
@@ -296,6 +320,7 @@ namespace Neo.Shell
                         Program.Wallet = wallet;
                         Console.WriteLine($"address: {account.Address}");
                         Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        system.RpcServer?.OpenWallet(Program.Wallet);
                     }
                     break;
                 default:
@@ -371,7 +396,8 @@ namespace Neo.Shell
             Console.Write(
                 "Normal Commands:\n" +
                 "\tversion\n" +
-                "\thelp\n" +
+                "\thelp [plugin-name]\n" +
+                "\tplugins\n" +
                 "\tclear\n" +
                 "\texit\n" +
                 "Wallet Commands:\n" +
@@ -397,6 +423,21 @@ namespace Neo.Shell
                 "\trelay <jsonObjectToSign>\n" +
                 "Advanced Commands:\n" +
                 "\tstart consensus\n");
+
+            return true;
+        }
+
+        private bool OnPluginsCommand(string[] args)
+        {
+            if (Plugin.Plugins.Count > 0)
+            {
+                Console.WriteLine("Loaded plugins:");
+                Plugin.Plugins.ForEach(p => Console.WriteLine("\t" + p.Name));
+            }
+            else
+            {
+                Console.WriteLine("No loaded plugins");
+            }
             return true;
         }
 
@@ -633,6 +674,7 @@ namespace Neo.Shell
             {
                 Console.WriteLine($"failed to open file \"{path}\"");
             }
+            system.RpcServer?.OpenWallet(Program.Wallet);
             return true;
         }
 
